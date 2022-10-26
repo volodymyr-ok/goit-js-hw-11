@@ -8,6 +8,7 @@ body {
   background-color: rgb(47, 47, 59);
   color: white;
   font-family: 'Times New Roman', Times, serif;
+  padding: 40px;
 }
 
 h1,
@@ -30,4 +31,45 @@ img {
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  padding: 10px;
+  justify-content: center;
+}
+
+.photo-card {
+  width: 200px;
+  height: 220px;
+  border: 1px dotted white;
+  border-radius: 10px;
+}
+
+.photo-card img {
+  border-radius: 10px;
+}
+
+/* .info {
+}
+
+.info-item {
+} */
+
+.load-more {
+  display: block;
+  margin: 20px auto;
+  /* scale: 2; */
+}
+
+.visually-hidden {
+  display: none;
 }

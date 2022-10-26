@@ -1,40 +1,107 @@
 import axios from 'axios';
 import { Notify } from 'notiflix';
-
 const getEl = selector => document.querySelector(selector);
-const searchForm = getEl('.search-form');
+
 const searchBtn = getEl('.search-btn');
+const searchInput = getEl('input[name="searchQuery"]');
 const gallery = getEl('.gallery');
+const loadMoreBtn = getEl('.load-more');
+const path = 'https://pixabay.com/api/';
 const USER_KEY = '30862042-0df1a58bd13a46a6d149ce250';
+let pageNumber = 1;
 
-const pixURL = 'https://pixabay.com/api/';
+searchBtn.addEventListener('click', actionOnSearchBtn);
 
-const queryParams = new URLSearchParams({
-  key: USER_KEY,
-  q: searchForm.value,
-  image_type: 'photo',
-  orientation: 'horizontal',
-  safesearch: true,
-});
+loadMoreBtn.classList.add('visually-hidden');
+loadMoreBtn.addEventListener('click', actionOnLoadBtn);
 
-// searchBtn.addEventListener('click', actionOnSearchBtn);
+function actionOnSearchBtn(event) {
+  event.preventDefault();
+  gallery.innerHTML = '';
+  loadMoreBtn.classList.add('visually-hidden');
+  pageNumber = 1;
 
-console.log(queryParams);
+  const queryParams = new URLSearchParams({
+    key: USER_KEY,
+    q: searchInput.value,
+    image_type: 'photo',
+    orientation: 'horizontal',
+    safesearch: true,
+    page: pageNumber,
+    per_page: 40,
+  });
 
-// gallery.innerHTML = `<div class="photo-card">
-//   <img src="" alt="${tags}" loading="lazy" />
-//   <div class="info">
-//     <p class="info-item">
-//       <b>${likes}</b>
-//     </p>
-//     <p class="info-item">
-//       <b>${views}</b>
-//     </p>
-//     <p class="info-item">
-//       <b>${comments}</b>
-//     </p>
-//     <p class="info-item">
-//       <b>${downloads}</b>
-//     </p>
-//   </div>
-// </div>`;
+  dataFetch(queryParams);
+}
+
+function actionOnLoadBtn() {
+  const queryParams = new URLSearchParams({
+    key: USER_KEY,
+    q: searchInput.value,
+    image_type: 'photo',
+    orientation: 'horizontal',
+    safesearch: true,
+    page: pageNumber,
+    per_page: 40,
+  });
+
+  dataFetch(queryParams);
+}
+
+async function dataFetch(params) {
+  try {
+    const result = await axios.get(`${path}?${params}`);
+
+    if (result.data.hits.length === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    }
+
+    gallery.insertAdjacentHTML(
+      'beforeend',
+      result.data.hits.map(updateMarkup).join('')
+    );
+
+    if (result.data.hits.length < 40) {
+      loadMoreBtn.classList.add('visually-hidden');
+
+      Notify.info(`We're sorry, but you've reached the end of search results.`);
+    } else {
+      loadMoreBtn.classList.remove('visually-hidden');
+    }
+
+    pageNumber++;
+  } catch (error) {
+    throw new Error('No, boss ===> ' + error.message);
+  }
+}
+
+function updateMarkup({
+  webformatURL,
+  tags,
+  likes,
+  views,
+  comments,
+  downloads,
+}) {
+  return `
+                      <div class="photo-card">
+                        <img src=${webformatURL} alt="${tags}" loading="lazy" />
+                        <div class="info">
+                          <p class="info-item">
+                            <b>Likes</b> ${likes}
+                          </p>
+                          <p class="info-item">
+                            <b>Views</b> ${views}
+                          </p>
+                          <p class="info-item">
+                            <b>Comments</b> ${comments}
+                          </p>
+                          <p class="info-item">
+                            <b>Downloads</b> ${downloads}
+                          </p>
+                        </div>
+                      </div>
+                      `;
+}

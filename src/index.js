@@ -2,8 +2,14 @@ import axios from 'axios';
 import { Notify } from 'notiflix';
 const getEl = selector => document.querySelector(selector);
 import SimpleLightbox from 'simplelightbox';
-
+import 'simplelightbox/dist/simple-lightbox.min.css';
 // import debounce from 'lodash.debounce';
+
+// let lightbox = new SimpleLightbox('.gallery a', {
+//   captionDelay: 250,
+//   captionsData: 'alt',
+// });
+// console.log(lightbox);
 
 // const searchBtn = getEl('.search-btn');
 // const searchInput = getEl('input[name="searchQuery"]');
@@ -13,12 +19,10 @@ const loadMoreBtn = getEl('.load-more');
 const path = 'https://pixabay.com/api/';
 const USER_KEY = '30862042-0df1a58bd13a46a6d149ce250';
 let pageNumber = 1;
-let lightbox = new SimpleLightbox('.gallery a', {
-  captionDelay: 250,
-  captionsData: 'alt',
-});
+// let total = 0;
 
 searchForm.addEventListener('submit', actionOnSearchBtn);
+
 loadMoreBtn.classList.add('visually-hidden');
 loadMoreBtn.addEventListener('click', actionOnLoadBtn);
 
@@ -39,14 +43,22 @@ function actionOnLoadBtn() {
 //   let vieportPostion = getEl('body').clientHeight - window.scrollY;
 //   let clientVieportHeight = getEl('body').clientHeight;
 //   if (vieportPostion - window.innerHeight <= clientVieportHeight * 0.1) {
-//     async function scrollThis() {
-//       const result = await axios.get(`${path}?${queryParams}`);
-
-//       if (result.data.totalHits !== gallery.children.length) {
-//         dataFetch();
-//       }
-//       scrollThis();
+//     // scrollThis();
+//     // async function scrollThis() {
+//     // const result = await axios.get(`${path}?${queryParams}`);
+//     // if (result.data.totalHits <= gallery.children.length) {
+//     //   return;
+//     // }
+//     // if (result.data.totalHits !== gallery.children.length) {
+//     //   return;
+//     // }
+//     console.log(total);
+//     console.log(gallery.children.length);
+//     if (total === gallery.children.length) {
+//       return;
 //     }
+//     // debounce(dataFetch(), 1000);
+//     dataFetch();
 //   }
 // };
 
@@ -63,13 +75,17 @@ async function dataFetch() {
 
   try {
     const result = await axios.get(`${path}?${queryParams}`);
+    // total = result.data.totalHits;
 
-    console.log(gallery.children.length);
+    console.log(result);
 
     if (result.data.hits.length === 0) {
+      // debounce(
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
       );
+      //   1000
+      // );
       return;
     } else if (pageNumber === 1) {
       loadMoreBtn.classList.remove('visually-hidden');
@@ -83,11 +99,11 @@ async function dataFetch() {
       'beforeend',
       result.data.hits.map(updateMarkup).join('')
     );
-    // SimpleLightbox.refresh();
 
+    // lightbox.refresh();
     pageNumber++;
 
-    if (result.data.totalHits === gallery.children.length) {
+    if (result.data.totalHits <= gallery.children.length) {
       loadMoreBtn.classList.add('visually-hidden');
 
       Notify.info(`We're sorry, but you've reached the end of search results.`);
@@ -107,24 +123,24 @@ function updateMarkup({
   largeImageURL,
 }) {
   return `
-          <div class="photo-card">
-            <img src=${webformatURL} alt="${tags}" loading="lazy" class="photo-preview" />
-            <div class="info">
-              <p class="info-item">
-                <b>Likes</b> ${likes}
-              </p>
-              <p class="info-item">
-                <b>Views</b> ${views}
-              </p>
-              <p class="info-item">
-                <b>Comments</b> ${comments}
-              </p>
-              <p class="info-item">
-                <b>Downloads</b> ${downloads}
-              </p>
-            </div>
-          </div>
+  <div class="photo-card">
+  <a href="${largeImageURL} class="photo-link" target='_blank'>
+              <img src=${webformatURL} alt="${tags}" loading="lazy" class="photo-preview" />
+              <div class="info">
+                <p class="info-item">
+                  <b>🌟</b> ${likes}
+                </p>
+                <p class="info-item">
+                  <b>👓</b> ${views}
+                </p>
+                <p class="info-item">
+                  <b>🎭</b> ${comments}
+                </p>
+                <p class="info-item">
+                  <b>📦</b> ${downloads}
+                </p>
+              </div>
+              </a>
+              </div>
   `;
 }
-
-// <a class="photo-link" href="${largeImageURL}></a>
